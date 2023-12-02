@@ -1,0 +1,12 @@
+PyMuPDF==1.23.6
+Pillow
+docx2txt
+langchain
+openai
+tiktoken
+unstructured
+#unstructured[local-inference]
+python-dotenv
+chromadb
+google-search-results
+#dotenv

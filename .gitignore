@@ -22,6 +22,8 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
+Output/
+Chroma_DB/
 .installed.cfg
 *.egg
 MANIFEST
