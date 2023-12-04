@@ -1,5 +1,5 @@
 PyMuPDF==1.23.6
-Pillow
+Pillow==9.4.0
 docx2txt
 langchain
 openai
