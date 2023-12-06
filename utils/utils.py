@@ -2,8 +2,10 @@ import fitz
 import io
 from PIL import Image
 import os
-from openai import OpenAI
+from langchain.llms import OpenAI
+#from openai import OpenAI
 import base64
+import configparser
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv, find_dotenv
@@ -14,6 +16,24 @@ min_image_width = 100
 min_image_file_size = 10000
 
 load_dotenv(find_dotenv())
+
+
+def read_config():
+  config = configparser.ConfigParser()
+  try:
+    config.read('rag_config.ini')
+    print('read config.ini')
+    #print("mode ", config['DEFAULT']['mode'])
+    secs = config.items()
+    for sec in secs:
+      print(sec)
+  except:
+    print('config.ini file not found')
+    exit(1)
+    
+  return config
+
+rag_config = read_config()
 
 def create_a_folder(path, folder_name):
   folder_loc = os.path.join(path, folder_name)

@@ -1,5 +1,7 @@
 from langchain.chains import RetrievalQA
-from langchain import OpenAI, LLMChain, PromptTemplate
+from langchain.llms import OpenAI
+from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
 from langchain.agents import ZeroShotAgent, initialize_agent, Tool, AgentType, AgentExecutor
 from langchain.tools import BaseTool
 from langchain.utilities import SerpAPIWrapper

@@ -1,14 +1,18 @@
 import os
 import shutil
 import getpass
-from openai import OpenAI
+import configparser
+#from openai import OpenAI
+from langchain.llms import OpenAI
 import base64
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv, find_dotenv
 from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
 
 from utils import (
+    rag_config,
     create_a_folder,
     process_text,
     process_images,
@@ -23,7 +27,8 @@ from agents import (
 )
 
 from vectorstore import(
-    rebuild_retriever
+    rebuild_retriever,
+    get_retriever
 )
 
 input_folder = "../input_docs"
@@ -67,7 +72,11 @@ def generate_query_response(agent_chain, query, max_length=2000):
     return response
 
 if __name__ == "__main__":
-
+   
+    read_mode = True
+    if rag_config['DEFAULT']['mode'] != 'read' :
+        read_mode = False
+    
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if openai_api_key is None:
         raise ValueError("OPENAI_API_KEY is not set")
@@ -80,15 +89,28 @@ if __name__ == "__main__":
     chat_model = ChatOpenAI(model_name="gpt-4-1106-preview")
     chat_model.openai_api_key = openai_api_key
     
-    text_files_path, image_files_path = process_input_documents()
-    qa_retriever = get_qa_retriever(text_files_path, image_files_path)
+    if read_mode == False:
+        #upload documents and query them
+        text_files_path, image_files_path = process_input_documents()
+        print("file paths", text_files_path, image_files_path)
+        qa_retriever = get_qa_retriever(text_files_path, image_files_path)
     
-    rag_qa = RetrievalQA.from_chain_type(
-                    llm=chat_model,
-                    chain_type="stuff",
-                    retriever=qa_retriever,
-                    return_source_documents=True,
-                    )
+        rag_qa = RetrievalQA.from_chain_type(
+                        llm=chat_model,
+                        chain_type="stuff",
+                        retriever=qa_retriever,
+                        return_source_documents=True,
+                        )
+    else:
+        #use existing vectorDB to query results
+        retriever = get_retriever(chunk_size,output_folder).vectorstore.as_retriever()
+        rag_qa = RetrievalQA.from_chain_type(
+                        llm=chat_model,
+                        chain_type="stuff",
+                        retriever=retriever,
+                        return_source_documents=True,
+                        )
+    
     tools = get_tools(rag_qa)
     prompt_template = get_prompt_template(tools)
     agent_chain = get_agent_chain_with_memory(chat_model, prompt_template, tools)
