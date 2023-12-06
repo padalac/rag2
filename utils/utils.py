@@ -3,7 +3,6 @@ import io
 from PIL import Image
 import os
 from langchain.llms import OpenAI
-#from openai import OpenAI
 import base64
 import configparser
 from langchain.chat_models import ChatOpenAI
@@ -22,11 +21,7 @@ def read_config():
   config = configparser.ConfigParser()
   try:
     config.read('rag_config.ini')
-    print('read config.ini')
     #print("mode ", config['DEFAULT']['mode'])
-    secs = config.items()
-    for sec in secs:
-      print(sec)
   except:
     print('config.ini file not found')
     exit(1)
