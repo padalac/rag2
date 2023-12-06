@@ -17,9 +17,10 @@ from utils import rag_config
 def get_vector_db(embeddings):
   db = None
   if rag_config['chroma']['srvr_mode'] == 'in_memory' :
+    persistent_directory= rag_config['chroma']['persistent_dir']
     db = Chroma(collection_name="all_documents", 
                 embedding_function = embeddings, 
-                persist_directory= rag_config['chroma'['persistent_dir']])
+                persist_directory = persistent_directory)
   else:
     chroma_settings = Settings(
                               chroma_api_impl='rest',
@@ -34,7 +35,7 @@ def get_vector_db(embeddings):
     db = Chroma(client=client,collection_name="all_documents", 
               embedding_function = embeddings)
     
-    return db
+  return db
   
   
 
@@ -66,6 +67,7 @@ def get_retriever(chunk_size, output_folder):
     store = create_kv_docstore(fs)
     embeddings = OpenAIEmbeddings()  # type: ignore
     vectorstore = get_vector_db(embeddings)
+ 
     retriever = ParentDocumentRetriever(
       vectorstore=vectorstore,
       docstore=store,

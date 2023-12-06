@@ -92,7 +92,6 @@ if __name__ == "__main__":
     if read_mode == False:
         #upload documents and query them
         text_files_path, image_files_path = process_input_documents()
-        print("file paths", text_files_path, image_files_path)
         qa_retriever = get_qa_retriever(text_files_path, image_files_path)
     
         rag_qa = RetrievalQA.from_chain_type(
