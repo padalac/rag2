@@ -1,7 +1,10 @@
 PyMuPDF==1.23.6
 Pillow==9.4.0
 docx2txt
-langchain
+langchain==0.0.345
+langchain-core==0.0.9
+langdetect==1.0.9
+langsmith==0.0.69
 openai
 tiktoken
 unstructured

@@ -18,7 +18,7 @@ def get_vector_db(embeddings):
   db = None
   if rag_config['chroma']['srvr_mode'] == 'in_memory' :
     persistent_directory= rag_config['chroma']['persistent_dir']
-    db = Chroma(collection_name="all_documents", 
+    db = Chroma(collection_name=rag_config['chroma']['collection_name'], 
                 embedding_function = embeddings, 
                 persist_directory = persistent_directory)
   else:
@@ -32,7 +32,7 @@ def get_vector_db(embeddings):
     client = chromadb.HttpClient(host= ip_addr, port=port,
                                  headers=headers,
                                  settings=chroma_settings)
-    db = Chroma(client=client,collection_name="all_documents", 
+    db = Chroma(client=client,collection_name=rag_config['chroma']['collection_name'], 
               embedding_function = embeddings)
     
   return db
