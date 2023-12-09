@@ -15,7 +15,7 @@ Creating a application docker
 1. configure your OPENAI_API_KEY, SERPAPI_API_KEY
 2. make clean (cleans up the output and Chroma_DB directories if they exist) 
 3. make build_docker
-   (Note: if this fails on a linux terminal, complaining about sed,  replace  sed -i "" with sed -i  in makefile. Some non-compatible changes between Linux and Mac)
+   (Note: if this fails on a mac terminal, complaining about sed,  replace  sed -i  with sed -i "" in makefile. Some non-compatible changes between Linux and Mac)
 4. After the docker build is changed manually edit the rag_config.ini file to have mode=update
 
 
