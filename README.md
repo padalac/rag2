@@ -1,7 +1,8 @@
 # rag
 Capstone project code for enterprise RAG Q&amp;A solution
 
-Execute python3 main.py  under utils directory as it expects the rag_config.ini file in that directory
+Execute python3 main.py to run the program under utils directory as it expects the rag_config.ini file in that directory.
+Currently it waits forever after executing the queries (to prevent docker from crashing. Manually kill it.)
 
 rag_config.ini 'mode' has 2 modes 1. update mode and read mode
 when in read mode, it expects to use existing embeddings where as in update mode it creates/uses embeddings
@@ -15,6 +16,9 @@ Creating a application docker
 2. make clean (cleans up the output and Chroma_DB directories if they exist) 
 3. make build_docker
    (Note: if this fails on a linux terminal, complaining about sed,  replace  sed -i "" with sed -i  in makefile. Some non-compatible changes between Linux and Mac)
+4. After the docker build is changed manually edit the rag_config.ini file to have mode=update
+
+
 
 #How to run the docker instance (replace -d with -it for interactive running)
 docker run -d  -e OPENAI_API_KEY=$OPENAI_API_KEY -e SERPAPI_API_KEY=$SERPAPI_API_KEY --name my_rag9 rag:v1 
