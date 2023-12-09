@@ -13,6 +13,7 @@ from langchain.storage import LocalFileStore
 from langchain.chains import RetrievalQA
 
 from utils import rag_config
+from utils import clean_text
 
 def get_vector_db(embeddings):
   db = None
@@ -44,11 +45,11 @@ def load_all_documents_not_csv_from_folder(folder_path: str, glob_pattern: str =
     This function loads all documents from a specified folder path that are not in CSV format and
     returns them as a list.
     """
-    loader = DirectoryLoader(folder_path, glob=glob_pattern or "**/*")
+    loader = DirectoryLoader(folder_path, glob=glob_pattern or "**/*.txt", use_multithreading=True)
     loaded_documents = loader.load()
     return loaded_documents
 
-def get_retriever(chunk_size, output_folder):
+def get_retriever(collection_name, chunk_size, output_folder):
     parent_splitter = RecursiveCharacterTextSplitter(
         separators=["\n\n", "\n", " ", ", ", "."],
         chunk_size=chunk_size, #chunk_size in no.of characters
@@ -57,7 +58,7 @@ def get_retriever(chunk_size, output_folder):
 
     # Use smaller chunks for getting more relevant context
     child_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400,
+        chunk_size=500,
         separators=["\n\n", "\n", " ", ", ", "."],
         chunk_overlap=20
       )
@@ -66,8 +67,9 @@ def get_retriever(chunk_size, output_folder):
     fs = LocalFileStore(f"{output_folder}/vector_store")
     store = create_kv_docstore(fs)
     embeddings = OpenAIEmbeddings()  # type: ignore
-    vectorstore = get_vector_db(embeddings)
- 
+    vectorstore = Chroma(collection_name=collection_name,
+                         embedding_function = embeddings,
+                         persist_directory=rag_config['chroma']['persistent_dir'])
     retriever = ParentDocumentRetriever(
       vectorstore=vectorstore,
       docstore=store,
@@ -78,7 +80,9 @@ def get_retriever(chunk_size, output_folder):
 
 def rebuild_retriever(folder_name, chunk_size, output_folder):
     docs = load_all_documents_not_csv_from_folder(folder_name)
-    retriever = get_retriever(chunk_size, output_folder)
+    for doc in docs:
+      doc.page_content = clean_text(doc.page_content)
+    retriever = get_retriever(rag_config['chroma']['collection_name'], chunk_size, output_folder)
     retriever.add_documents(docs, ids=None)
     return retriever
 

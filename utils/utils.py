@@ -1,4 +1,5 @@
 import fitz
+import re
 import io
 from PIL import Image
 import os
@@ -15,7 +16,6 @@ min_image_width = 100
 min_image_file_size = 10000
 
 load_dotenv(find_dotenv())
-
 
 def read_config():
   config = configparser.ConfigParser()
@@ -61,7 +61,6 @@ def get_text_descr_from_image(image_path):
           )
       ]
   )
-  #print(msg.content)
   return msg.content
 
 def process_images(in_file, out_dir):
@@ -126,11 +125,20 @@ def process_image_and_text_from_docx(file_name, file_path, output_folder):
   text_loc = create_a_folder(output_folder, "Text")
   image_loc = create_a_folder(output_folder, "Images")
   text = docx2txt.process(file_path, image_loc)
-  #f_name = os.path.splitext(file_name)[0]
-  #f_name = file_name
   text_path = os.path.join(text_loc, f"Text_{file_name}.txt")
   with open(text_path, "w") as f2:
     f2.write(text)
   del_small_files(image_loc, min_image_file_size)
   return text_loc, image_loc
-  #return text
+
+def clean_text(content):
+  # Define a regular expression pattern to match unwanted characters
+  junk_pattern = re.compile(r'[\r\n\x01\x08]')
+
+  # Use a list comprehension to clean each text in the input list
+  cleaned_text = re.sub(junk_pattern, ' ', content)
+
+  # Removing multiple spaces
+  cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+
+  return cleaned_text

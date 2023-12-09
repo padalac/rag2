@@ -1,16 +1,10 @@
 import os
 import time
-import shutil
-import getpass
-import configparser
-#from openai import OpenAI
 from langchain.llms import OpenAI
 import base64
 from langchain.chat_models import ChatOpenAI
-from langchain.schema.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv, find_dotenv
 from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
 
 from utils import (
     rag_config,
@@ -33,15 +27,13 @@ from vectorstore import(
 )
 
 input_folder = "../input_docs"
-print(input_folder)
 output_folder = "../Output"
-chunk_size = 7500
+chunk_size = int(rag_config['DEFAULT']['chunk_size'])
 
 def process_input_documents():
     # Create the Output folder if it doesn't exist
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    print(output_folder)
 
     text_files_path = ""
     image_files_path = ""
@@ -50,20 +42,16 @@ def process_input_documents():
         file_path = os.path.join(input_folder, file_name)
         if file_name.endswith(".pdf"):
             with open(file_path, "rb") as f_pdf:
-                print(file_path)
-                #text_files_path = process_text(file_path, output_folder, os.path.splitext(file_name)[0])
                 text_files_path = process_text(file_path, output_folder, file_name)
                 image_files_path = process_images(file_path, output_folder)
         elif file_name.endswith(".docx"):
             text_files_path, image_files_path = process_image_and_text_from_docx(file_name, file_path, output_folder)
-            print(text_files_path)
         
     return text_files_path, image_files_path
 
 def get_qa_retriever(text_files_path, image_files_path):
     get_all_image_descriptions(image_files_path, text_files_path)
     chroma_loc = create_a_folder(output_folder, "Chroma")
-    #qa_retriever = get_retriever(text_files_path)
     qa_retriever = rebuild_retriever(text_files_path, chunk_size, chroma_loc)
     return qa_retriever
 
@@ -73,7 +61,7 @@ def generate_query_response(agent_chain, query, max_length=2000):
     return response
 
 if __name__ == "__main__":
-   
+
     read_mode = True
     if rag_config['DEFAULT']['mode'] != 'read' :
         read_mode = False
@@ -105,8 +93,9 @@ if __name__ == "__main__":
         if rag_config['DEFAULT']['mode'] == 'update_only' :
             exit(0)
     else:
+        chroma_loc = os.path.join(output_folder, "Chroma")
         #use existing vectorDB to query results
-        retriever = get_retriever(chunk_size,output_folder).vectorstore.as_retriever()
+        retriever = get_retriever(rag_config['chroma']['collection_name'], chunk_size, chroma_loc)
         rag_qa = RetrievalQA.from_chain_type(
                         llm=chat_model,
                         chain_type="stuff",
