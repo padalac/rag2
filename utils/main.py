@@ -1,4 +1,5 @@
 import os
+import time
 import shutil
 import getpass
 import configparser
@@ -100,6 +101,9 @@ if __name__ == "__main__":
                         retriever=qa_retriever,
                         return_source_documents=True,
                         )
+        qa_retriever.vectorstore.persist()
+        if rag_config['DEFAULT']['mode'] == 'update_only' :
+            exit(0)
     else:
         #use existing vectorDB to query results
         retriever = get_retriever(chunk_size,output_folder).vectorstore.as_retriever()
@@ -119,5 +123,9 @@ if __name__ == "__main__":
     
     query = "what makes RAG superior?"
     print(generate_query_response(agent_chain, query))
-    query = "Any other ways to improve its efficiency?"
-    print(generate_query_response(agent_chain, query))
+    #query = "Any other ways to improve its efficiency?"
+    #print(generate_query_response(agent_chain, query))
+    
+    # just make this process sleep forever (otherwise the docker crashes)
+    while True:
+        time.sleep(1)
