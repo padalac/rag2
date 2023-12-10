@@ -1,0 +1,10 @@
+ragas
+arxiv
+wandb
+datasets
+langchain==0.0.345
+langchain-core==0.0.9
+langdetect==1.0.9
+langsmith==0.0.69
+tqdm
+pandas

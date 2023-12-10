@@ -1,3 +1,7 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 import fitz
 import re
 import io
@@ -10,6 +14,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv, find_dotenv
 import docx2txt
+import config
 
 min_image_height = 100
 min_image_width = 100
@@ -17,18 +22,17 @@ min_image_file_size = 10000
 
 load_dotenv(find_dotenv())
 
-def read_config():
-  config = configparser.ConfigParser()
-  try:
-    config.read('rag_config.ini')
-    #print("mode ", config['DEFAULT']['mode'])
-  except:
-    print('config.ini file not found')
-    exit(1)
-    
-  return config
+# Config Directory
+PACKAGE_ROOT = Path(config.__file__).resolve().parent
+print(PACKAGE_ROOT)
+CONFIG_FILE_PATH = PACKAGE_ROOT / "rag_config.ini"
+print(CONFIG_FILE_PATH)
 
-rag_config = read_config()
+rag_config = configparser.ConfigParser()
+rag_config.read(CONFIG_FILE_PATH)
+
+llm_chat = rag_config.get('DEFAULT','llm_chat')
+llm_vision = rag_config['DEFAULT']['llm_vision']
 
 def create_a_folder(path, folder_name):
   folder_loc = os.path.join(path, folder_name)
@@ -38,12 +42,11 @@ def create_a_folder(path, folder_name):
   return folder_loc
 
 def get_text_descr_from_image(image_path):
-  #image_path = "Output/Images/image1.jpg"
-  image_data = ""
+  
   with open(image_path, "rb") as image_file:
     image =  base64.b64encode(image_file.read()).decode('utf-8')
 
-  chain = ChatOpenAI(model="gpt-4-vision-preview", max_tokens=1024)
+  chain = ChatOpenAI(model=llm_vision, max_tokens=1024)
   msg = chain.invoke(
       [   AIMessage(
           content="You are a helpful assistant and can describe images."
@@ -82,7 +85,7 @@ def process_images(in_file, out_dir):
         image = Image.open(io.BytesIO(image_bytes))
         if image.height < min_image_height or image.width < min_image_width:
           continue
-        print(image.height, image.width)
+
         # save it to local disk
         img_name = f"image_{page_index+1}_{image_index}.{image_ext}"
         img_file = os.path.join(image_loc, img_name)

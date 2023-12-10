@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.append(str(Path(__file__).resolve().parent))
+print(sys.path)
+
 from pathlib import Path
 import chromadb
 from chromadb.config import Settings 
@@ -5,15 +11,26 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 #from langchain.vectorstores.faiss import FAISS
 from langchain.vectorstores import Chroma
-from langchain.document_loaders import TextLoader, DirectoryLoader
-from langchain.storage import InMemoryStore
+from langchain.document_loaders import DirectoryLoader
+#from langchain.storage import InMemoryStore
 from langchain.retrievers import ParentDocumentRetriever
 from langchain.storage._lc_store import create_kv_docstore
 from langchain.storage import LocalFileStore
-from langchain.chains import RetrievalQA
+#from langchain.chains import RetrievalQA
 
-from utils import rag_config
-from utils import clean_text
+import config
+from utils.utils import clean_text
+import configparser
+
+# Config Directory
+PACKAGE_ROOT = Path(config.__file__).resolve().parent
+#print(PACKAGE_ROOT)
+CONFIG_FILE_PATH = PACKAGE_ROOT / "rag_config.ini"
+#print(CONFIG_FILE_PATH)
+
+rag_config = configparser.ConfigParser()
+rag_config.read(CONFIG_FILE_PATH)
+
 
 def get_vector_db(embeddings):
   db = None
@@ -64,6 +81,7 @@ def get_retriever(collection_name, chunk_size, output_folder):
       )
 
     # The storage layer for the parent documents
+    
     fs = LocalFileStore(f"{output_folder}/vector_store")
     store = create_kv_docstore(fs)
     embeddings = OpenAIEmbeddings()  # type: ignore

@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+
 import os
 import time
 from langchain.llms import OpenAI
@@ -5,9 +10,10 @@ import base64
 from langchain.chat_models import ChatOpenAI
 from dotenv import load_dotenv, find_dotenv
 from langchain.chains import RetrievalQA
+import configparser
+import config, vector_store
 
 from utils import (
-    rag_config,
     create_a_folder,
     process_text,
     process_images,
@@ -21,14 +27,24 @@ from agents import (
     get_agent_chain_with_memory
 )
 
-from vectorstore import(
+from vector_store.vectorstore import(
     rebuild_retriever,
     get_retriever
 )
 
-input_folder = "../input_docs"
-output_folder = "../Output"
+# Config Directory
+PACKAGE_ROOT = Path(config.__file__).resolve().parent
+#print(PACKAGE_ROOT)
+CONFIG_FILE_PATH = PACKAGE_ROOT / "rag_config.ini"
+#print(CONFIG_FILE_PATH)
+
+rag_config = configparser.ConfigParser()
+rag_config.read(CONFIG_FILE_PATH)
+
+input_folder = rag_config['DEFAULT']['input_folder']
+output_folder = rag_config['DEFAULT']['output_folder']
 chunk_size = int(rag_config['DEFAULT']['chunk_size'])
+llm_chat = rag_config['DEFAULT']['llm_chat']
 
 def process_input_documents():
     # Create the Output folder if it doesn't exist
@@ -51,8 +67,8 @@ def process_input_documents():
 
 def get_qa_retriever(text_files_path, image_files_path):
     get_all_image_descriptions(image_files_path, text_files_path)
-    chroma_loc = create_a_folder(output_folder, "Chroma")
-    qa_retriever = rebuild_retriever(text_files_path, chunk_size, chroma_loc)
+    chroma_path = create_a_folder(output_folder, rag_config['chroma']['chroma_loc'])
+    qa_retriever = rebuild_retriever(text_files_path, chunk_size, chroma_path)
     return qa_retriever
 
 def generate_query_response(agent_chain, query, max_length=2000):
@@ -75,7 +91,7 @@ if __name__ == "__main__":
         raise ValueError("SERPAPI_API_KEY is not set")
     #os.environ["SERPAPI_API_KEY"] = getpass.getpass('Enter Google SERP API Key:')
     
-    chat_model = ChatOpenAI(model_name="gpt-4-1106-preview")
+    chat_model = ChatOpenAI(model_name=llm_chat)
     chat_model.openai_api_key = openai_api_key
     
     if read_mode == False:
@@ -93,9 +109,9 @@ if __name__ == "__main__":
         if rag_config['DEFAULT']['mode'] == 'update_only' :
             exit(0)
     else:
-        chroma_loc = os.path.join(output_folder, "Chroma")
+        chroma_path = os.path.join(output_folder, rag_config['chroma']['chroma_loc'])
         #use existing vectorDB to query results
-        retriever = get_retriever(rag_config['chroma']['collection_name'], chunk_size, chroma_loc)
+        retriever = get_retriever(rag_config['chroma']['collection_name'], chunk_size, chroma_path)
         rag_qa = RetrievalQA.from_chain_type(
                         llm=chat_model,
                         chain_type="stuff",
