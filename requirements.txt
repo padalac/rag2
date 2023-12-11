@@ -12,4 +12,5 @@ unstructured
 python-dotenv
 chromadb
 google-search-results
+gradio
 #dotenv

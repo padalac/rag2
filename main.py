@@ -12,8 +12,9 @@ from dotenv import load_dotenv, find_dotenv
 from langchain.chains import RetrievalQA
 import configparser
 import config, vector_store
+import gradio as gr
 
-from utils import (
+from utils.utils import (
     create_a_folder,
     process_text,
     process_images,
@@ -21,7 +22,7 @@ from utils import (
     get_all_image_descriptions
 )
 
-from agents import (
+from utils.agents import (
     get_tools,
     get_prompt_template,
     get_agent_chain_with_memory
@@ -59,14 +60,14 @@ def process_input_documents():
         if file_name.endswith(".pdf"):
             with open(file_path, "rb") as f_pdf:
                 text_files_path = process_text(file_path, output_folder, file_name)
-                image_files_path = process_images(file_path, output_folder)
+                #image_files_path = process_images(file_path, output_folder)
         elif file_name.endswith(".docx"):
             text_files_path, image_files_path = process_image_and_text_from_docx(file_name, file_path, output_folder)
         
     return text_files_path, image_files_path
 
 def get_qa_retriever(text_files_path, image_files_path):
-    get_all_image_descriptions(image_files_path, text_files_path)
+    #get_all_image_descriptions(image_files_path, text_files_path)
     chroma_path = create_a_folder(output_folder, rag_config['chroma']['chroma_loc'])
     qa_retriever = rebuild_retriever(text_files_path, chunk_size, chroma_path)
     return qa_retriever
@@ -75,6 +76,7 @@ def generate_query_response(agent_chain, query, max_length=2000):
     #response = agent_chain.run(input=query)
     response = agent_chain({"input": query})
     return response
+
 
 if __name__ == "__main__":
 
@@ -123,8 +125,23 @@ if __name__ == "__main__":
     prompt_template = get_prompt_template(tools)
     agent_chain = get_agent_chain_with_memory(chat_model, prompt_template, tools)
     
-    # Clean up by deleting the folders and files created
-    #shutil.rmtree(output_folder, ignore_errors=True)
+    # Create title, description and article strings
+    title = "Enterprise QnA chat bot"
+    description = "RAG with ChatGPT4 based Q and A application"
+
+    # Gradio interface to generate UI link
+    demo = gr.Interface(fn=generate_query_response,
+                        inputs = "text",
+                        outputs = "text",
+                        #inputs= gr.Text(label="Prompt"), # what are the inputs?
+                        #outputs=outputs, # our fn has two outputs, therefore we have two outputs
+                        #examples=example_list,
+                        title=title,
+                        description=description,)
+
+    demo.launch(debug=True, # print errors locally?
+                share=True) # generate a publically shareable URL?
+    '''
     
     query = "what makes RAG superior?"
     print(generate_query_response(agent_chain, query))
@@ -134,3 +151,4 @@ if __name__ == "__main__":
     # just make this process sleep forever (otherwise the docker crashes)
     while True:
         time.sleep(1)
+    '''
