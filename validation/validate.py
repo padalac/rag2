@@ -18,7 +18,7 @@ from langchain.output_parsers import StructuredOutputParser
 from langchain.prompts import ChatPromptTemplate
 from utils.utils import clean_text, create_a_folder
 from vector_store.vectorstore import get_retriever
-from templates import get_question_template, get_answer_template
+from validation.templates import get_question_template, get_answer_template
 from tqdm import tqdm
 
 from ragas.metrics import (

@@ -46,7 +46,6 @@ input_folder = rag_config['DEFAULT']['input_folder']
 output_folder = rag_config['DEFAULT']['output_folder']
 chunk_size = int(rag_config['DEFAULT']['chunk_size'])
 llm_chat = rag_config['DEFAULT']['llm_chat']
-agent_chain = None
 
 def process_input_documents():
     # Create the Output folder if it doesn't exist
@@ -73,13 +72,13 @@ def get_qa_retriever(text_files_path, image_files_path):
     qa_retriever = rebuild_retriever(text_files_path, chunk_size, chroma_path)
     return qa_retriever
 
-def generate_query_response(query):
+def generate_query_response(agent_chain, query):
     response = agent_chain({"input": query})
     return response
 
 
-if __name__ == "__main__":
-
+#if __name__ == "__main__":
+def main_qa():
     read_mode = True
     if rag_config['DEFAULT']['mode'] != 'read' :
         read_mode = False
@@ -95,7 +94,7 @@ if __name__ == "__main__":
     
     chat_model = ChatOpenAI(model_name=llm_chat)
     chat_model.openai_api_key = openai_api_key
-    
+    read_mode = True
     if read_mode == False:
         #upload documents and query them
         text_files_path, image_files_path = process_input_documents()
@@ -124,14 +123,13 @@ if __name__ == "__main__":
     tools = get_tools(rag_qa)
     prompt_template = get_prompt_template(tools)
     agent_chain = get_agent_chain_with_memory(chat_model, prompt_template, tools)
-    
     st.title("Enterprise QnA chat bot")
     st.text("RAG with ChatGPT4 based Q and A application")
     query = ""
     query = st.text_input("Enter the query: ")
     print(query)
     if query != "":
-        response = generate_query_response(query)
+        response = generate_query_response(agent_chain, query)
         print(response)
         st.markdown(response["output"])
     

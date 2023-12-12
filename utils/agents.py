@@ -43,10 +43,10 @@ def get_agent_chain_with_memory(chat_model, prompt_template, tools):
     llm_chain = LLMChain(
         llm=chat_model,
         prompt=prompt_template,
-        verbose=True,
+        verbose=False,
         memory=readonlymemory,  # use the read-only memory to prevent the tool from modifying the memory
         )
 
-    agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, verbose=True)
-    agent_chain = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory)
+    agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, verbose=False)
+    agent_chain = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=False, memory=memory)
     return agent_chain
