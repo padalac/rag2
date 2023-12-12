@@ -4,7 +4,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 
 import os
-import time
+import time 
 from langchain.llms import OpenAI
 import base64
 from langchain.chat_models import ChatOpenAI
@@ -12,7 +12,9 @@ from dotenv import load_dotenv, find_dotenv
 from langchain.chains import RetrievalQA
 import configparser
 import config, vector_store
-import gradio as gr
+#import gradio as gr
+import streamlit as st
+
 
 from utils.utils import (
     create_a_folder,
@@ -33,6 +35,8 @@ from vector_store.vectorstore import(
     get_retriever
 )
 
+
+
 # Config Directory
 PACKAGE_ROOT = Path(config.__file__).resolve().parent
 #print(PACKAGE_ROOT)
@@ -46,6 +50,7 @@ input_folder = rag_config['DEFAULT']['input_folder']
 output_folder = rag_config['DEFAULT']['output_folder']
 chunk_size = int(rag_config['DEFAULT']['chunk_size'])
 llm_chat = rag_config['DEFAULT']['llm_chat']
+agent_chain = None
 
 def process_input_documents():
     # Create the Output folder if it doesn't exist
@@ -72,7 +77,7 @@ def get_qa_retriever(text_files_path, image_files_path):
     qa_retriever = rebuild_retriever(text_files_path, chunk_size, chroma_path)
     return qa_retriever
 
-def generate_query_response(agent_chain, query, max_length=2000):
+def generate_query_response(query, max_length=2000):
     #response = agent_chain.run(input=query)
     response = agent_chain({"input": query})
     return response
@@ -80,6 +85,9 @@ def generate_query_response(agent_chain, query, max_length=2000):
 
 if __name__ == "__main__":
 
+    os.environ["OPENAI_API_KEY"] = "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"
+    os.environ["SERPAPI_API_KEY"] = "e2d872e54f163e0062aa5d16ed843b00e4d7254286eab409821ece8b5cc47c05"
+    
     read_mode = True
     if rag_config['DEFAULT']['mode'] != 'read' :
         read_mode = False
@@ -125,30 +133,14 @@ if __name__ == "__main__":
     prompt_template = get_prompt_template(tools)
     agent_chain = get_agent_chain_with_memory(chat_model, prompt_template, tools)
     
-    # Create title, description and article strings
-    title = "Enterprise QnA chat bot"
-    description = "RAG with ChatGPT4 based Q and A application"
-
-    # Gradio interface to generate UI link
-    demo = gr.Interface(fn=generate_query_response,
-                        inputs = "text",
-                        outputs = "text",
-                        #inputs= gr.Text(label="Prompt"), # what are the inputs?
-                        #outputs=outputs, # our fn has two outputs, therefore we have two outputs
-                        #examples=example_list,
-                        title=title,
-                        description=description,)
-
-    demo.launch(debug=True, # print errors locally?
-                share=True) # generate a publically shareable URL?
-    '''
+    st.title("Enterprise QnA chat bot")
+    st.text("RAG with ChatGPT4 based Q and A application")
+    query = ""
+    query = st.text_input("Enter the query: ")
+    print(query)
+    if query != "":
+        response = generate_query_response(query)
+        print(response)
+        st.markdown(response["output"])
     
-    query = "what makes RAG superior?"
-    print(generate_query_response(agent_chain, query))
-    #query = "Any other ways to improve its efficiency?"
-    #print(generate_query_response(agent_chain, query))
-    
-    # just make this process sleep forever (otherwise the docker crashes)
-    while True:
-        time.sleep(1)
-    '''
+

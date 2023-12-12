@@ -24,9 +24,7 @@ load_dotenv(find_dotenv())
 
 # Config Directory
 PACKAGE_ROOT = Path(config.__file__).resolve().parent
-print(PACKAGE_ROOT)
 CONFIG_FILE_PATH = PACKAGE_ROOT / "rag_config.ini"
-print(CONFIG_FILE_PATH)
 
 rag_config = configparser.ConfigParser()
 rag_config.read(CONFIG_FILE_PATH)

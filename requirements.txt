@@ -1,3 +1,4 @@
+python==3.10
 PyMuPDF==1.23.6
 Pillow==9.4.0
 docx2txt
@@ -12,5 +13,5 @@ unstructured
 python-dotenv
 chromadb
 google-search-results
-gradio
+streamlit==1.29.0
 #dotenv

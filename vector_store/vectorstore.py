@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 sys.path.append(str(Path(__file__).resolve().parent))
-print(sys.path)
+#print(sys.path)
 
 from pathlib import Path
 import chromadb

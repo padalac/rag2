@@ -3,7 +3,11 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import os
+os.environ["OPENAI_API_KEY"] = "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"
+os.environ["SERPAPI_API_KEY"] = "e2d872e54f163e0062aa5d16ed843b00e4d7254286eab409821ece8b5cc47c05"
+
 import pandas as pd
+import datasets
 from datasets import Dataset
 from datasets import load_dataset
 from langchain.chat_models import ChatOpenAI
@@ -33,14 +37,18 @@ import config
 PACKAGE_ROOT = Path(config.__file__).resolve().parent
 #print(PACKAGE_ROOT)
 CONFIG_FILE_PATH = PACKAGE_ROOT / "rag_config.ini"
-#print(CONFIG_FILE_PATH)
+print(CONFIG_FILE_PATH)
 
 rag_config = configparser.ConfigParser()
 rag_config.read(CONFIG_FILE_PATH)
 
+os.environ["OPENAI_API_KEY"] = "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"
+os.environ["SERPAPI_API_KEY"] = "e2d872e54f163e0062aa5d16ed843b00e4d7254286eab409821ece8b5cc47c05"
+
 docs_count = int(rag_config['validate']['input_docs_count'])
 output_folder = rag_config['validate']['output_folder']
 create_validation_qa_set = bool(rag_config['validate']['create_validation_file_set'])
+print("*****", create_validation_qa_set)
 validation_folder = rag_config['validate']['validation_file_loc']
 llm_chat = rag_config['DEFAULT']['llm_chat']
 primary_qa_llm = ChatOpenAI(model_name=llm_chat, temperature=0)
@@ -149,7 +157,10 @@ def create_validation_dataset(docs):
     return eval_dataset
 
 def get_dataset_from_csv_file(csv_file):
-    dataset = load_dataset("csv", data_files=csv_file)
+    # print(csv_file)
+    dataset = datasets.load_dataset('csv', data_files=f'{csv_file}')
+    # with open('eval_ds.txt', 'w') as f:
+    #     print(dataset, file=f)
     return dataset
 
     
@@ -188,21 +199,33 @@ def get_validation_result():
     validation_retriever = get_validation_retriever()
     eval_dataset = ""
     
+    #create_validation_qa_set = bool(False)
+
+    #print(create_validation_qa_set)
+
     if create_validation_qa_set == True:
         docs = load_documents_from_arxiv()
-        validation_retriever.from_documents(docs)
+        validation_retriever.add_documents(docs)
         eval_dataset = create_validation_dataset(docs)
         eval_dataset.to_csv(validation_file)
     else:
         eval_dataset = get_dataset_from_csv_file(validation_file)
-    
+
     validation_qa_chain = get_validation_qa_chain(validation_retriever)
     qa_ragas_dataset = create_ragas_dataset(validation_qa_chain, eval_dataset)
+
+#    with open('qa_ragas_ds.txt', 'w') as f:
+#        print(qa_ragas_dataset, file=f)
+
     validation_result_file = os.path.join(validation_folder_path, "evaluation_result.csv")
     qa_ragas_dataset.to_csv(validation_result_file)
-    evaluation_result = eval_dataset(qa_ragas_dataset)
+    evaluation_result = evaluate_ragas_dataset(qa_ragas_dataset)
     
     print(evaluation_result)
     
     return evaluation_result
     
+if __name__ == "__main__":
+
+    result = get_validation_result()
+    print(result)
