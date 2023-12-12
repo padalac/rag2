@@ -2,10 +2,10 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-import os
-os.environ["OPENAI_API_KEY"] = "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"
-os.environ["SERPAPI_API_KEY"] = "e2d872e54f163e0062aa5d16ed843b00e4d7254286eab409821ece8b5cc47c05"
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
+import os
 import pandas as pd
 import datasets
 from datasets import Dataset
@@ -42,13 +42,9 @@ print(CONFIG_FILE_PATH)
 rag_config = configparser.ConfigParser()
 rag_config.read(CONFIG_FILE_PATH)
 
-os.environ["OPENAI_API_KEY"] = "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"
-os.environ["SERPAPI_API_KEY"] = "e2d872e54f163e0062aa5d16ed843b00e4d7254286eab409821ece8b5cc47c05"
-
 docs_count = int(rag_config['validate']['input_docs_count'])
 output_folder = rag_config['validate']['output_folder']
 create_validation_qa_set = bool(rag_config['validate']['create_validation_file_set'])
-print("*****", create_validation_qa_set)
 validation_folder = rag_config['validate']['validation_file_loc']
 llm_chat = rag_config['DEFAULT']['llm_chat']
 primary_qa_llm = ChatOpenAI(model_name=llm_chat, temperature=0)

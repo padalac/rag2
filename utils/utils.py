@@ -7,12 +7,11 @@ import re
 import io
 from PIL import Image
 import os
-from langchain.llms import OpenAI
 import base64
 import configparser
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.messages import HumanMessage, AIMessage
-from dotenv import load_dotenv, find_dotenv
+#from dotenv import load_dotenv, find_dotenv
 import docx2txt
 import config
 
@@ -20,7 +19,7 @@ min_image_height = 100
 min_image_width = 100
 min_image_file_size = 10000
 
-load_dotenv(find_dotenv())
+#load_dotenv(find_dotenv())
 
 # Config Directory
 PACKAGE_ROOT = Path(config.__file__).resolve().parent

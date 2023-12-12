@@ -2,17 +2,6 @@ from langchain.chains import LLMChain
 from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
 from langchain.utilities import SerpAPIWrapper
 from langchain.memory import ConversationBufferMemory, ReadOnlySharedMemory
-#from langchain.memory.readonly import ReadOnlySharedMemory
-
-# from langchain.chains import ConversationalRetrievalChain
-# from langchain.chat_models import ChatOpenAI
-# from langchain.prompts.chat import (
-#     ChatPromptTemplate,
-#     HumanMessagePromptTemplate,
-#     SystemMessagePromptTemplate,
-# )
-# from langchain.schema import HumanMessage, SystemMessage
-
 
 def get_tools(rag_qa):
     search = SerpAPIWrapper()

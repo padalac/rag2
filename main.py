@@ -4,17 +4,13 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 
 import os
-import time 
-from langchain.llms import OpenAI
-import base64
+from dotenv import load_dotenv
+load_dotenv()
 from langchain.chat_models import ChatOpenAI
-from dotenv import load_dotenv, find_dotenv
 from langchain.chains import RetrievalQA
 import configparser
 import config, vector_store
-#import gradio as gr
 import streamlit as st
-
 
 from utils.utils import (
     create_a_folder,
@@ -77,8 +73,7 @@ def get_qa_retriever(text_files_path, image_files_path):
     qa_retriever = rebuild_retriever(text_files_path, chunk_size, chroma_path)
     return qa_retriever
 
-def generate_query_response(query, max_length=2000):
-    #response = agent_chain.run(input=query)
+def generate_query_response(query):
     response = agent_chain({"input": query})
     return response
 
