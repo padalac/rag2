@@ -20,7 +20,6 @@ endif
 build_docker: venv
 	sed -i ${SED_SPACE} 's/^mode=.*/mode=update_only/g' config/rag_config.ini
 	sed -i ${SED_SPACE} 's/^srvr_mode=.*/srvr_mode=in_memory/g' config/rag_config.ini
-	streamlit run main.py
 	docker build . -f Dockerfile -t rag:v1
 
 

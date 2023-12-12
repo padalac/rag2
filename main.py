@@ -85,9 +85,6 @@ def generate_query_response(query, max_length=2000):
 
 if __name__ == "__main__":
 
-    os.environ["OPENAI_API_KEY"] = "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"
-    os.environ["SERPAPI_API_KEY"] = "e2d872e54f163e0062aa5d16ed843b00e4d7254286eab409821ece8b5cc47c05"
-    
     read_mode = True
     if rag_config['DEFAULT']['mode'] != 'read' :
         read_mode = False
