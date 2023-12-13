@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from langchain.chat_models import ChatOpenAI
-from langchain.chains import RetrievalQA
+from langchain.chains import RetrievalQAWithSourcesChain
 import configparser
 import config, vector_store
 import streamlit as st
@@ -18,12 +18,6 @@ from utils.utils import (
     process_images,
     process_image_and_text_from_docx,
     get_all_image_descriptions
-)
-
-from utils.agents import (
-    get_tools,
-    get_prompt_template,
-    get_agent_chain_with_memory
 )
 
 from vector_store.vectorstore import(
@@ -73,9 +67,8 @@ def get_qa_retriever(text_files_path, image_files_path):
     return qa_retriever
 
 def generate_query_response(agent_chain, query):
-    response = agent_chain({"input": query})
+    response = agent_chain({"question": query}, return_only_outputs=False)
     return response
-
 
 #if __name__ == "__main__":
 def main_qa():
@@ -87,24 +80,20 @@ def main_qa():
     if openai_api_key is None:
         raise ValueError("OPENAI_API_KEY is not set")
     
-    serp_api_key = os.getenv("SERPAPI_API_KEY")
-    if serp_api_key is None:
-        raise ValueError("SERPAPI_API_KEY is not set")
-    #os.environ["SERPAPI_API_KEY"] = getpass.getpass('Enter Google SERP API Key:')
-    
-    chat_model = ChatOpenAI(model_name=llm_chat)
+    chat_model = ChatOpenAI(model_name=llm_chat, temperature=0)
     chat_model.openai_api_key = openai_api_key
-    read_mode = True
+    #read_mode = True
+
     if read_mode == False:
         #upload documents and query them
         text_files_path, image_files_path = process_input_documents()
         qa_retriever = get_qa_retriever(text_files_path, image_files_path)
     
-        rag_qa = RetrievalQA.from_chain_type(
+        rag_qa = RetrievalQAWithSourcesChain.from_chain_type(
                         llm=chat_model,
                         chain_type="stuff",
                         retriever=qa_retriever,
-                        return_source_documents=True,
+                        return_source_documents=True
                         )
         qa_retriever.vectorstore.persist()
         if rag_config['DEFAULT']['mode'] == 'update_only' :
@@ -113,24 +102,28 @@ def main_qa():
         chroma_path = os.path.join(output_folder, rag_config['chroma']['chroma_loc'])
         #use existing vectorDB to query results
         retriever = get_retriever(rag_config['chroma']['collection_name'], chunk_size, chroma_path)
-        rag_qa = RetrievalQA.from_chain_type(
+        rag_qa = RetrievalQAWithSourcesChain.from_chain_type(
                         llm=chat_model,
                         chain_type="stuff",
                         retriever=retriever,
-                        return_source_documents=True,
+                        return_source_documents=True
                         )
-    
-    tools = get_tools(rag_qa)
-    prompt_template = get_prompt_template(tools)
-    agent_chain = get_agent_chain_with_memory(chat_model, prompt_template, tools)
+
     st.title("Enterprise QnA chat bot")
-    st.text("RAG with ChatGPT4 based Q and A application")
+    st.markdown("RAG with ChatGPT4 based Q and A application")
     query = ""
     query = st.text_input("Enter the query: ")
     print(query)
     if query != "":
-        response = generate_query_response(agent_chain, query)
+        response = generate_query_response(rag_qa, query)
         print(response)
-        st.markdown(response["output"])
+        st.markdown("\nResponse\n\n")
+        st.markdown(response["answer"])
+        st.markdown("\nSource Documents used:")
+        if (response['sources']==''):
+            st.markdown("There were no relevant source documents corresponding to this query")
+        else:
+            st.markdown(response['sources'].lstrip(f"Output/Text/Text_").rstrip('.txt'))
+
     
 

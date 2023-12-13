@@ -43,7 +43,7 @@ def get_text_descr_from_image(image_path):
   with open(image_path, "rb") as image_file:
     image =  base64.b64encode(image_file.read()).decode('utf-8')
 
-  chain = ChatOpenAI(model=llm_vision, max_tokens=1024)
+  chain = ChatOpenAI(model=llm_vision, temperature=0, max_tokens=1024)
   msg = chain.invoke(
       [   AIMessage(
           content="You are a helpful assistant and can describe images."
