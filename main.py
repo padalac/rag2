@@ -11,6 +11,7 @@ from langchain.chains import RetrievalQAWithSourcesChain
 import configparser
 import config, vector_store
 import streamlit as st
+import time
 
 from utils.utils import (
     create_a_folder,
@@ -49,6 +50,7 @@ def process_input_documents():
     text_files_path = ""
     image_files_path = ""
     # Traverse the input_folder and process each file
+    t1_start = time.time()
     for file_name in os.listdir(input_folder):
         file_path = os.path.join(input_folder, file_name)
         if file_name.endswith(".pdf"):
@@ -57,24 +59,30 @@ def process_input_documents():
                 #image_files_path = process_images(file_path, output_folder)
         elif file_name.endswith(".docx"):
             text_files_path, image_files_path = process_image_and_text_from_docx(file_name, file_path, output_folder)
-        
+    t1_end = time.time()
+    print("process_input_documents took time to complete -- ", t1_end - t1_start)
     return text_files_path, image_files_path
 
 def get_qa_retriever(text_files_path, image_files_path):
     #get_all_image_descriptions(image_files_path, text_files_path)
     chroma_path = create_a_folder(output_folder, rag_config['chroma']['chroma_loc'])
+    t2_start = time.time()
     qa_retriever = rebuild_retriever(text_files_path, chunk_size, chroma_path)
+    t2_end = time.time()
+    print("rebuild_retriever took time to complete -- ", t2_end - t2_start)
     return qa_retriever
 
-def generate_query_response(agent_chain, query):
-    response = agent_chain({"question": query}, return_only_outputs=False)
+@st.cache_data
+def generate_query_response(_agent_chain, query):
+    response = _agent_chain({"question": query}, return_only_outputs=False)
     return response
 
 #if __name__ == "__main__":
 def main_qa():
     read_mode = True
-    if rag_config['DEFAULT']['mode'] != 'read' :
-        read_mode = False
+    if 'read_mode' not in st.session_state:
+        if rag_config['DEFAULT']['mode'] != 'read' :
+            read_mode = False
     
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if openai_api_key is None:
@@ -85,6 +93,8 @@ def main_qa():
     #read_mode = True
 
     if read_mode == False:
+        if 'read_mode' not in st.session_state:
+            st.session_state['read_mode'] = True
         #upload documents and query them
         text_files_path, image_files_path = process_input_documents()
         qa_retriever = get_qa_retriever(text_files_path, image_files_path)
@@ -115,7 +125,10 @@ def main_qa():
     query = st.text_input("Enter the query: ")
     print(query)
     if query != "":
+        t3_start = time.time()
         response = generate_query_response(rag_qa, query)
+        t3_end = time.time()
+        print("generate_query_response took time to complete -- ", t3_end - t3_start)
         print(response)
         st.markdown("\nResponse\n\n")
         st.markdown(response["answer"])
@@ -123,7 +136,10 @@ def main_qa():
         if (response['sources']==''):
             st.markdown("There were no relevant source documents corresponding to this query")
         else:
-            st.markdown(response['sources'].lstrip(f"Output/Text/Text_").rstrip('.txt'))
+            if response['sources'].startswith("Output/Text"):
+                st.markdown(response['sources'].lstrip(f"Output/Text/Text_").rstrip('.txt'))
+            else:
+                st.markdown(response['sources'])
 
     
 
