@@ -8,9 +8,6 @@ langsmith==0.0.69
 openai
 tiktoken
 unstructured
-#unstructured[local-inference]
-python-dotenv
+#python-dotenv
 chromadb
-google-search-results
 streamlit==1.29.0
-#dotenv

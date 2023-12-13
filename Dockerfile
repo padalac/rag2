@@ -8,5 +8,5 @@ RUN pip install -r validation/requirements.txt
 
 RUN sed -i  's/^mode=.*/mode=read/g' config/rag_config.ini
 
-ENTRYPOINT ["streamlit", "run", "main.py"]
+ENTRYPOINT ["streamlit", "run", "streamlit_app.py"]
 
