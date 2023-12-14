@@ -65,7 +65,8 @@ def main_qa():
         t3_start = time.time()
         response = generate_query_response(rag_qa, query)
         t3_end = time.time()
-        print("generate_query_response took time to complete -- ", t3_end - t3_start)
+        qp_time_taken = t3_end - t3_start
+        print("generate_query_response took time to complete -- ", qp_time_taken)
         print(response)
         st.markdown("\nResponse\n\n")
         st.markdown(response["answer"])
@@ -77,6 +78,7 @@ def main_qa():
                 st.markdown(response['sources'].lstrip(f"Output/Text/Text_").rstrip('.txt'))
             else:
                 st.markdown(response['sources'])
-
+        st.markdown("Time taken to complete query processing (secs):")
+        st.markdown(qp_time_taken)
     
 

@@ -20,10 +20,10 @@ Creating a application docker
 4. After the docker build is changed manually edit the rag_config.ini file to have mode=update (if you want to create the vector db index values). Otherwise, leave mode=read
 
 
-# Default port of streamlit app is 8501. You need to map it to another port for accessing the app outside container
-# using the switch "-p 8080:8501"
-# The app running on docker container can be accessed by using the url http://localhost:8080
+Default port of streamlit app is 8501. You need to map it to another port for accessing the app outside container
+ using the switch "-p 8080:8501"
+The app running on docker container can be accessed by using the url http://localhost:8080
 
-# How to run the docker instance (replace -d with -it for interactive running)
+How to run the docker instance (replace -d with -it for interactive running)
 
-docker run -it -p 8080:8501 -e OPENAI_API_KEY=$OPENAI_API_KEY -e SERPAPI_API_KEY=$SERPAPI_API_KEY --name my_rag1 rag:v1
+docker run -it -p 8080:8501 -e OPENAI_API_KEY=$OPENAI_API_KEY --name my_rag1 rag:v1
