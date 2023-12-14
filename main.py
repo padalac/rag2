@@ -96,12 +96,18 @@ def main_qa():
         st.markdown("\nResponse\n\n")
         st.markdown(response["answer"])
         st.markdown("\nSource Documents used:")
+
         if (response['sources']==''):
             st.markdown("There were no relevant source documents corresponding to this query")
             empty_responses.inc()
         else:
             if response['sources'].startswith("Output/Text"):
-                st.markdown(response['sources'].lstrip(f"Output/Text/Text_").rstrip('.txt'))
+                file_list = response['sources'].split(",")
+                file_names = []
+                for file_name in file_list:
+                    file_names.append(file_name.strip().lstrip(f"Output/Text/Text_").rstrip('.txt'))
+                all_files = ", ".join(file_names)
+                st.markdown(all_files)
                 non_empty_responses.inc()
             else:
                 st.markdown(response['sources'])
