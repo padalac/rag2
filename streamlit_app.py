@@ -1,5 +1,6 @@
 import streamlit as st
-import main, validation.validate as val
+import main
+#import validation.validate as val
 
 def run_main():
     main.main_qa()
