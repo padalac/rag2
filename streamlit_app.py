@@ -1,14 +1,16 @@
 import streamlit as st
 import main
-#import validation.validate as val
 
 def run_main():
     main.main_qa()
 
 def run_validation():
-    # ***** Uncomment the below line *******
-    #validation_result = val.get_validation_result()
-    validation_result={'context_precision': 0.6389, 'faithfulness': 1.0000, 'answer_relevancy': 0.9780, 'context_recall': 1.0000}
+    try:
+        validation_result = main.get_val_results_from_file()
+    except:
+        validation_result={'context_precision': 0.6389, 'faithfulness': 1.0000, 'answer_relevancy': 0.9780, 'context_recall': 1.0000}
+        st.markdown("Not the real-time data")
+
     with st.container(border=True):
         st.header("Validation Results")
         st.divider()

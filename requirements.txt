@@ -11,3 +11,4 @@ unstructured
 #python-dotenv
 chromadb
 streamlit==1.29.0
+prometheus-client

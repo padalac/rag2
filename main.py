@@ -10,6 +10,8 @@ import configparser
 import config, vector_store
 import streamlit as st
 import time
+import prometheus_client as prom
+from prometheus_client import Counter
 
 from vector_store.vectorstore import(
     get_retriever
@@ -31,6 +33,28 @@ output_folder = rag_config['DEFAULT']['output_folder']
 chunk_size = int(rag_config['DEFAULT']['chunk_size'])
 llm_chat = rag_config['DEFAULT']['llm_chat']
 
+total_queries = prom.Counter('total_queries', 'Total no.of queries asked so far, by the users of this app')
+non_empty_responses = prom.Counter('non_empty_responses', 'No. of times the answers were based on context')
+empty_responses = prom.Counter('empty_responses', 'No.of times there was no context based response')
+
+@st.cache_data
+def get_val_results_from_file():
+    validation_folder = rag_config['validate']['validation_file_loc']
+    validation_folder_path = os.path.join(output_folder, validation_folder)
+    validation_results_path = os.path.join(validation_folder_path, "evaluation_result.txt")
+
+    val_results = ""
+    with open(validation_results_path, "r") as fval:
+        val_results = fval.read()
+        print(val_results)
+
+    data = {}
+    for pair in val_results.lstrip('{').rstrip('}').split(','):
+        key, value = pair.strip().split(':')
+        data[key.strip('\'')] = float(value.strip())
+
+    print(data)
+    return data
 
 @st.cache_data
 def generate_query_response(_agent_chain, query):
@@ -62,6 +86,7 @@ def main_qa():
     query = st.text_input("Enter the query: ")
     print(query)
     if query != "":
+        total_queries.inc()
         t3_start = time.time()
         response = generate_query_response(rag_qa, query)
         t3_end = time.time()
@@ -73,11 +98,14 @@ def main_qa():
         st.markdown("\nSource Documents used:")
         if (response['sources']==''):
             st.markdown("There were no relevant source documents corresponding to this query")
+            empty_responses.inc()
         else:
             if response['sources'].startswith("Output/Text"):
                 st.markdown(response['sources'].lstrip(f"Output/Text/Text_").rstrip('.txt'))
+                non_empty_responses.inc()
             else:
                 st.markdown(response['sources'])
+                empty_responses.inc()
         st.markdown("Time taken to complete query processing (secs):")
         st.markdown(qp_time_taken)
     

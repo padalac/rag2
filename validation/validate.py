@@ -186,6 +186,7 @@ def evaluate_ragas_dataset(ragas_dataset):
             context_recall,
         ],
     )
+
     return result
 
 def get_validation_result():
@@ -213,12 +214,16 @@ def get_validation_result():
 #    with open('qa_ragas_ds.txt', 'w') as f:
 #        print(qa_ragas_dataset, file=f)
 
-    validation_result_file = os.path.join(validation_folder_path, "evaluation_result.csv")
+    validation_result_file = os.path.join(validation_folder_path, "validation_result.csv")
     qa_ragas_dataset.to_csv(validation_result_file)
     evaluation_result = evaluate_ragas_dataset(qa_ragas_dataset)
     
+    evaluation_result_file = os.path.join(validation_folder_path, "evaluation_result.txt")
+    with open(evaluation_result_file, "w") as feval:
+      feval.write(str(evaluation_result))
+
     print(evaluation_result)
-    
+
     return evaluation_result
     
 if __name__ == "__main__":
