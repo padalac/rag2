@@ -3,8 +3,6 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import os
-from dotenv import load_dotenv
-load_dotenv()
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQAWithSourcesChain
 import configparser
