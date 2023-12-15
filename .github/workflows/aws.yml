@@ -66,5 +66,5 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: 'ap-southeast-2'
       run: |
-        aws ssm put-parameter --name "junk_parameter" --type "String" --value "1" --overwrite
+        aws ssm put-parameter --name "new_input_file" --type "String" --value "1" --overwrite
         
