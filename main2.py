@@ -93,6 +93,6 @@ if __name__ == "__main__":
                         return_source_documents=True
                         )
         qa_retriever.vectorstore.persist()
-        time.sleep(5)
+        time.sleep(10)
         if rag_config['DEFAULT']['mode'] == 'update_only' :
             exit(0)
