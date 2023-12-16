@@ -23,6 +23,8 @@ build_docker: venv
 	sed -i ${SED_SPACE} 's/^srvr_mode=.*/srvr_mode=in_memory/g' config/rag_config.ini
 	docker build . -f Dockerfile -t rag:latest
 
+build_validation: venv
+	${BIN}/python3 validation/validate.py
 
 build_docker_aws: venv
 	sed -i ${SED_SPACE} 's/^mode=.*/mode=update_only/g' config/rag_config.ini
