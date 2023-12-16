@@ -26,8 +26,11 @@ build_docker: venv
 build_validation: venv
 	${BIN}/python3 validation/validate.py
 
+
 build_docker_aws: venv
 	sed -i ${SED_SPACE} 's/^mode=.*/mode=update_only/g' config/rag_config.ini
 	sed -i ${SED_SPACE} 's/^srvr_mode=.*/srvr_mode=in_memory/g' config/rag_config.ini
 	${BIN}/python3 main2.py
+	mkdir Output/for_validation
+	cp evaluation_result.txt Output/for_validation
 	docker build . -f Dockerfile -t rag:latest
